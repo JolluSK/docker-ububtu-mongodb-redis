@@ -1,17 +1,11 @@
 FROM ubuntu:18.04
 
+# Set root password
+RUN echo 'root:root' | chpasswd
+
 # Install dependencies
 RUN apt update && \
-    apt install -y gnupg && \
-    apt install -y wget && \
-    apt install -y openssh-server && \
-    apt install -y curl && \
-    apt install -y nano && \
-    apt install -y iputils-ping && \
-    apt install -y net-tools && \
-    apt install -y iproute2 && \
-    apt install -y vim && \
-    apt install -y iperf
+    apt install -y gnupg wget openssh-server curl nano iputils-ping net-tools iproute2 vim iperf
 
 # Add MongoDB repository key and source list
 RUN curl -fsSL https://www.mongodb.org/static/pgp/server-4.4.asc |  apt-key add - && \
@@ -27,5 +21,7 @@ RUN apt update && apt install -y redis-server
 # Expose ports
 EXPOSE 22 27017 6379
 
+RUN mkdir /run/sshd
+
 # Start services
-CMD ["/bin/bash", "-c", "service mongodb start && service redis-server start && /usr/sbin/sshd -D"]
+CMD ["/bin/bash", "-c", "/usr/bin/mongod --fork --logpath /var/log/mongodb.log --config /etc/mongod.conf && /usr/bin/redis-server /etc/redis/redis.conf && /usr/sbin/sshd -D"]
